@@ -2,6 +2,42 @@
 
 Všetky dôležité zmeny v projekte **brloh-parser**.
 
+## [0.1.9] - 2026-03-31
+### Added
+- nekolidujúci scan loop cez systemd service
+- ďalší scan sa spustí až 120 sekúnd po dobehnutí predchádzajúceho
+- systemd service uložená aj v repozitári pod `systemd/brloh-parser-scan.service`
+
+### Verified
+- frontend beží na lokálnej app URL
+- frontend HTML obsahuje aktuálnu verziu a auto-reload mechanizmus po dokončení scanu
+
+## [0.1.8] - 2026-03-31
+### Changed
+- celý parser prepnutý na skladový listing `https://www.brloh.sk/Vyhladavanie/pokemon-karty?query=tcg#s=r&st=1`
+- parser je odteraz orientovaný na skladové produkty z tohto výpisu
+
+### Fixed
+- databáza sa resetuje kvôli odstráneniu starých neaktívnych produktov a historických záznamov
+
+Všetky dôležité zmeny v projekte **brloh-parser**.
+
+## [0.1.8] - 2026-03-31
+### Changed
+- celý parser prepnutý na skladový listing `https://www.brloh.sk/Vyhladavanie/pokemon-karty?query=tcg#s=r&st=1`
+- parser je odteraz orientovaný na skladové produkty z tohto výpisu
+
+### Fixed
+- databáza sa resetuje kvôli odstráneniu starých neaktívnych produktov a historických záznamov
+
+## [0.1.7] - 2026-03-31
+### Changed
+- source listing prepnutý na URL filtrovanú len na skladové produkty
+- parser načítava produkty zo skladového výpisu `#s=r&st=1`
+
+### Notes
+- cieľom je zrýchliť scan znížením počtu načítavaných detailov
+
 ## [0.1.6] - 2026-03-31
 ### Fixed
 - parser prechádza listing cez „Zobraziť ďalšie produkty“

@@ -16,11 +16,11 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 
 APP_HOST = "0.0.0.0"
 APP_PORT = int(os.getenv("APP_PORT", "8093"))
-APP_VERSION = "0.1.6"
+APP_VERSION = "0.1.9"
 
 SHOP = "brloh"
 SOURCE_URLS = [
-    "https://www.brloh.sk/Vyhladavanie/pokemon-karty?query=tcg",
+    "https://www.brloh.sk/Vyhladavanie/pokemon-karty?query=tcg#s=r&st=1",
 ]
 SOURCE_URL = SOURCE_URLS[0]
 

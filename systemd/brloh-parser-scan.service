@@ -1,0 +1,17 @@
+[Unit]
+Description=Brloh Parser Scan Loop
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/brloh-parser
+ExecStart=/usr/bin/env bash /home/brloh-parser/scan_loop.sh
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
