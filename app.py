@@ -7,6 +7,8 @@ import time
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
+
+import requests
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
@@ -16,7 +18,11 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 
 APP_HOST = "0.0.0.0"
 APP_PORT = int(os.getenv("APP_PORT", "8093"))
-APP_VERSION = "0.1.9"
+APP_VERSION = "0.1.10"
+
+AGGREGATOR_SYNC_ENABLED = os.getenv("AGGREGATOR_SYNC_ENABLED", "1") == "1"
+AGGREGATOR_BASE = os.getenv("AGGREGATOR_BASE", "http://127.0.0.1:8092").rstrip("/")
+AGGREGATOR_INGEST_PATH = os.getenv("AGGREGATOR_INGEST_PATH", "/api/ingest/run")
 
 SHOP = "brloh"
 SOURCE_URLS = [
@@ -909,10 +915,41 @@ def record_scan_error(error_text: str, source_url: str = SOURCE_URL) -> None:
         conn.commit()
 
 
+
+def push_to_aggregator(shop: str) -> Dict[str, Any]:
+    if not AGGREGATOR_SYNC_ENABLED:
+        return {"ok": False, "reason": "disabled"}
+
+    url = f"{AGGREGATOR_BASE}{AGGREGATOR_INGEST_PATH}"
+    params = {
+        "source": shop,
+        "trigger_scan": "0",
+    }
+
+    try:
+        response = requests.post(url, params=params, timeout=180)
+        response.raise_for_status()
+        try:
+            body = response.json()
+        except Exception:
+            body = {"ok": True, "status_code": response.status_code}
+        return {
+            "ok": True,
+            "status_code": response.status_code,
+            "body": body,
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "reason": str(e),
+        }
+
+
 def scan_once() -> Dict[str, Any]:
     ensure_db()
     live = fetch_live_products()
     persisted = persist_scan(live["items"], live["elapsed_ms"], SOURCE_URL)
+    aggregator_sync_result = push_to_aggregator("brloh")
     return {
         "ok": True,
         "shop": SHOP,
@@ -927,6 +964,7 @@ def scan_once() -> Dict[str, Any]:
         "price_events": persisted["price_events"],
         "availability_events": persisted["availability_events"],
         "disappeared_events": persisted["disappeared_events"],
+        "aggregator_sync": aggregator_sync_result,
     }
 
 

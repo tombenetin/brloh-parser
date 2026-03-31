@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.10 - 2026-03-31
+
+- Po úspešnom scane parser okamžite pushuje ingest do agregátora.
+- Výsledok scanu vracia aj aggregator_sync status.
+- Agregátor ingestuje Brloh bez spustenia druhého zbytočného scanu.
+
 Všetky dôležité zmeny v projekte **brloh-parser**.
 
 ## [0.1.9] - 2026-03-31
