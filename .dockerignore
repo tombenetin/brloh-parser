@@ -1,0 +1,14 @@
+.git
+.gitignore
+venv
+.venv
+.venv_run
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.sqlite3
+brloh-parser.log
+data

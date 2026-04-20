@@ -1,0 +1,15 @@
+services:
+  brloh-parser:
+    container_name: brloh-parser
+    build:
+      context: /home/brloh-parser
+      dockerfile: Dockerfile
+    ports:
+      - "8093:8093"
+    environment:
+      APP_PORT: "8093"
+      DB_PATH: "/data/brloh.db"
+      SCAN_SLEEP: "120"
+    volumes:
+      - /home/brloh-parser/data:/data
+    restart: unless-stopped
