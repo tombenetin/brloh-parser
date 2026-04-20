@@ -1,12 +1,15 @@
 # Changelog
 
-## v0.1.10 - 2026-03-31
-
-- Po úspešnom scane parser okamžite pushuje ingest do agregátora.
-- Výsledok scanu vracia aj aggregator_sync status.
-- Agregátor ingestuje Brloh bez spustenia druhého zbytočného scanu.
-
 Všetky dôležité zmeny v projekte **brloh-parser**.
+
+## [0.2.0] - 2026-03-31
+### Fixed
+- vypnuté `product_disappeared` eventy pre Brloh
+- odstránená príčina opakovaných po sebe idúcich duplicitných `disappeared` eventov
+
+### Reason
+- zdrojový listing Brlohu nie je dostatočne stabilný pre spoľahlivú detekciu zmiznutia produktu
+- parser preto sleduje len relevantné zmeny: nové produkty, ceny a dostupnosť
 
 ## [0.1.9] - 2026-03-31
 ### Added
@@ -26,33 +29,16 @@ Všetky dôležité zmeny v projekte **brloh-parser**.
 ### Fixed
 - databáza sa resetuje kvôli odstráneniu starých neaktívnych produktov a historických záznamov
 
-Všetky dôležité zmeny v projekte **brloh-parser**.
-
-## [0.1.8] - 2026-03-31
-### Changed
-- celý parser prepnutý na skladový listing `https://www.brloh.sk/Vyhladavanie/pokemon-karty?query=tcg#s=r&st=1`
-- parser je odteraz orientovaný na skladové produkty z tohto výpisu
-
-### Fixed
-- databáza sa resetuje kvôli odstráneniu starých neaktívnych produktov a historických záznamov
-
 ## [0.1.7] - 2026-03-31
 ### Changed
 - source listing prepnutý na URL filtrovanú len na skladové produkty
 - parser načítava produkty zo skladového výpisu `#s=r&st=1`
-
-### Notes
-- cieľom je zrýchliť scan znížením počtu načítavaných detailov
 
 ## [0.1.6] - 2026-03-31
 ### Fixed
 - parser prechádza listing cez „Zobraziť ďalšie produkty“
 - načítanie produktov už neostáva len na prvej stránke výsledkov
 - detail parsing produktov zostáva zachovaný pre správnu cenu, dostupnosť a obrázok
-
-### Changed
-- verzia zjednotená vo frontende a v backende
-- changelog doplnený o všetky doterajšie verzie
 
 ## [0.1.5] - 2026-03-31
 ### Changed

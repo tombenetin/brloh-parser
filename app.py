@@ -18,7 +18,7 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 
 APP_HOST = "0.0.0.0"
 APP_PORT = int(os.getenv("APP_PORT", "8093"))
-APP_VERSION = "0.1.10"
+APP_VERSION = "0.2.0"
 
 AGGREGATOR_SYNC_ENABLED = os.getenv("AGGREGATOR_SYNC_ENABLED", "1") == "1"
 AGGREGATOR_BASE = os.getenv("AGGREGATOR_BASE", "http://127.0.0.1:8092").rstrip("/")
@@ -839,37 +839,9 @@ def persist_scan(items: List[Dict[str, Any]], elapsed_ms: int, source_url: str =
                 ),
             )
 
-        for code, old_item in old_current_map.items():
-            if code in current_map:
-                continue
-
-            try:
-                payload = json.loads(old_item.get("payload_json") or "{}")
-            except Exception:
-                payload = {}
-
-            ev = make_event(
-                EVENT_TYPE_PRODUCT_DISAPPEARED,
-                code,
-                old_item.get("title") or "",
-                old_item.get("price"),
-                "disappeared",
-                old_item.get("url"),
-                {
-                    "source_url": source_url,
-                    "previous_current": {
-                        "code": code,
-                        "title": old_item.get("title"),
-                        "price": old_item.get("price"),
-                        "availability": old_item.get("availability"),
-                        "url": old_item.get("url"),
-                        "payload": payload,
-                    },
-                },
-                now,
-            )
-            insert_event(conn, ev)
-            disappeared_events.append(ev)
+        # Brloh: product_disappeared events disabled.
+        # Listing/filter source is not stable enough for reliable disappearance detection.
+        # We intentionally do nothing here to avoid duplicate disappeared spam.
 
         conn.execute(
             """
