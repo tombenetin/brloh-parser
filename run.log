@@ -1,0 +1,8 @@
+/home/brloh-parser/app.py:407: SyntaxWarning: invalid escape sequence '\d'
+  """
+/home/brloh-parser/app.py:521: SyntaxWarning: invalid escape sequence '\s'
+  """
+Traceback (most recent call last):
+  File "/home/brloh-parser/app.py", line 11, in <module>
+    import requests
+ModuleNotFoundError: No module named 'requests'

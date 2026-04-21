@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.2.5] - 2026-04-21
+### Fixed
+- scan s count=0 už neprepíše current produkty
+- prázdny výsledok sa zapisuje ako ignored empty scan result
+- znížené riziko falošných availability/disappeared zmien pri transientnom empty fetchi
+
+### Changed
+- verzia appky zvýšená na 0.2.5
+
+## [0.2.4] - 2026-04-21
+### Fixed
+- fetch_live_products má retry logiku pri transientnom prázdnom výsledku
+- prázdny listing z Brlohu sa už nebude hneď brať ako stabilný výsledok
+- znížené riziko prepísania current produktov na 0 pri náhodnom empty fetchi
+
+### Changed
+- verzia appky zvýšená na 0.2.4
+
+
+## [0.2.3] - 2026-04-21
+### Fixed
+- pre shop `brloh` sú natvrdo vypnuté `product_disappeared` eventy
+- pre shop `brloh` sa neukladajú ani availability eventy, kde sa vyskytuje stav `disappeared`
+- vyčistené historické `disappeared` eventy z parser DB aj z poke-agregator DB
+
 Všetky dôležité zmeny v projekte **brloh-parser**.
 
 ## [0.2.0] - 2026-03-31

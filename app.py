@@ -18,7 +18,7 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 
 APP_HOST = "0.0.0.0"
 APP_PORT = int(os.getenv("APP_PORT", "8093"))
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.2.5"
 
 AGGREGATOR_SYNC_ENABLED = os.getenv("AGGREGATOR_SYNC_ENABLED", "1") == "1"
 AGGREGATOR_BASE = os.getenv("AGGREGATOR_BASE", "http://127.0.0.1:8092").rstrip("/")
@@ -44,6 +44,13 @@ EVENT_TYPE_PRICE_CHANGE = "price_change"
 EVENT_TYPE_AVAILABILITY_CHANGE = "availability_change"
 EVENT_TYPE_PRODUCT_DISAPPEARED = "product_disappeared"
 EVENT_TYPE_SCAN_ERROR = "scan_error"
+
+def should_ignore_empty_scan_result(result: Dict[str, Any]) -> bool:
+    try:
+        return int((result or {}).get("count") or 0) == 0
+    except Exception:
+        return False
+
 
 PRODUCT_KEYWORDS = [
     "pokemon",
@@ -376,7 +383,7 @@ def parse_products_from_dom(dom_items: List[Dict[str, Any]], source_url: str) ->
 
 
 
-def fetch_live_products() -> Dict[str, Any]:
+def _fetch_live_products_once() -> Dict[str, Any]:
     started = time.time()
     all_items: List[Dict[str, Any]] = []
     seen_codes = set()
@@ -688,6 +695,47 @@ def fetch_live_products() -> Dict[str, Any]:
             context.close()
             browser.close()
 
+def _brloh_skip_disappeared_guard(event_type: str, payload: Optional[Dict[str, Any]] = None) -> bool:
+    if SHOP != "brloh":
+        return False
+    if event_type == EVENT_TYPE_PRODUCT_DISAPPEARED:
+        return True
+    if event_type == EVENT_TYPE_AVAILABILITY_CHANGE and payload:
+        old_a = str(payload.get("old_availability") or "").strip().lower()
+        new_a = str(payload.get("new_availability") or "").strip().lower()
+        if "disappeared" in old_a or "disappeared" in new_a:
+            return True
+    return False
+
+
+
+def fetch_live_products() -> Dict[str, Any]:
+    attempts = 3
+    last_result: Dict[str, Any] = {}
+    for attempt in range(1, attempts + 1):
+        result = _fetch_live_products_once()
+        last_result = result or {}
+        count = int((last_result or {}).get("count") or 0)
+        if count > 0:
+            if attempt > 1:
+                try:
+                    print(f"[fetch_live_products] recovered on retry #{attempt} with count={count}", flush=True)
+                except Exception:
+                    pass
+            return last_result
+        try:
+            print(f"[fetch_live_products] transient empty result on attempt {attempt}/{attempts}", flush=True)
+        except Exception:
+            pass
+        if attempt < attempts:
+            time.sleep(4 * attempt)
+    try:
+        print("[fetch_live_products] all retries returned empty result", flush=True)
+    except Exception:
+        pass
+    return last_result
+
+
 def insert_event(conn: sqlite3.Connection, event: Dict[str, Any]) -> None:
     conn.execute(
         """
@@ -920,6 +968,31 @@ def push_to_aggregator(shop: str) -> Dict[str, Any]:
 def scan_once() -> Dict[str, Any]:
     ensure_db()
     live = fetch_live_products()
+    if should_ignore_empty_scan_result(live):
+        insert_scan_run(
+            ok=False,
+            item_count=0,
+            elapsed_ms=live.get("elapsed_ms", 0),
+            source_url=SOURCE_URL,
+            error_text="ignored empty scan result",
+        )
+        return {
+            "ok": False,
+            "shop": SHOP,
+            "source_urls": SOURCE_URLS,
+            "elapsed_ms": live.get("elapsed_ms", 0),
+            "count": 0,
+            "new_count": 0,
+            "price_change_count": 0,
+            "availability_change_count": 0,
+            "disappeared_count": 0,
+            "new_events": [],
+            "price_events": [],
+            "availability_events": [],
+            "disappeared_events": [],
+            "error": "ignored empty scan result",
+        }
+
     persisted = persist_scan(live["items"], live["elapsed_ms"], SOURCE_URL)
     aggregator_sync_result = push_to_aggregator("brloh")
     return {
